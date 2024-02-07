@@ -17,24 +17,73 @@ let teamMargin = {top: 10, right: 30, bottom: 30, left: 60},
     teamWidth = width - teamMargin.left - teamMargin.right,
     teamHeight = height-450 - teamMargin.top - teamMargin.bottom;
 
+function grouper (data, groupName) {
+    // counts num of group 
+    var count = {};
+    // different categories in data/list of different groups
+    let groups = {};
 
-d3.csv("players.csv").then(rawData =>{
+    for (let obj of data) {
+
+        let tValue = obj[groupName];
+
+        if (tValue in count) {
+            // increases count by 1 per appearance
+         count[tValue]++;
+        } else {
+            // index value to 1 if first
+          count[tValue] = 1;
+        }
+    }
+
+    for (let obj of data) {
+
+        let gValue = obj[group];
+
+        if (gValue in groups) {
+            // append to groups
+         groups[gValue].push(obj);
+        } else {
+            // start of list of groups
+         groups[gValue] = [obj];
+        }
+      }
+      
+      // connect group name to group number in dict
+      for (let tValue in count) {
+        groups[tValue] = {
+          count: count[tValue]
+        };
+      }
+      return groups;
+
+
+}
+
+
+d3.csv("pokemon_alopez247.csv").then(rawData =>{
     console.log("rawData", rawData);
     
     rawData.forEach(function(d){
-        d.AB = Number(d.AB);
-        d.H = Number(d.H);
-        d.salary = Number(d.salary);
-        d.SO = Number(d.SO);
+        d.Type_1 = Number(d.Type_1);
+        d.Type_2 = Number(d.Type_2);
+        d.Name = d.Name;
+        d.HP = Number(d.HP);
     });
     
-
-    rawData = rawData.filter(d=>d.AB>abFilter);
+    rawData.forEach(function(d){
+            d.Type_1 = grouper(data, 'Type_1');
+            d.Type_2 = grouper(data, 'Type_2');
+    });
+    
+    
+    rawData = rawData.filter(d=>d.HP>abFilter);
     rawData = rawData.map(d=>{
                           return {
-                              "H_AB":d.H/d.AB,
-                              "SO_AB":d.SO/d.AB,
-                              "teamID":d.teamID,
+                              "Type 1":d.Type_1,
+                              "Type 2":d.Type_2,
+                              "Name":d.Name,
+                              "HP":d.HP,
                           };
     });
     console.log(rawData);
@@ -53,7 +102,7 @@ d3.csv("players.csv").then(rawData =>{
     .attr("y", scatterHeight + 50)
     .attr("font-size", "20px")
     .attr("text-anchor", "middle")
-    .text("H/AB")
+    .text("Type 1")
     
 
     // Y label
@@ -63,11 +112,11 @@ d3.csv("players.csv").then(rawData =>{
     .attr("font-size", "20px")
     .attr("text-anchor", "middle")
     .attr("transform", "rotate(-90)")
-    .text("SO/AB")
+    .text("HP")
 
     // X ticks
     const x1 = d3.scaleLinear()
-    .domain([0, d3.max(rawData, d => d.H_AB)])
+    .domain([0, d3.max(rawData, d => d.Type_1)])
     .range([0, scatterWidth])
 
     const xAxisCall = d3.axisBottom(x1)
@@ -83,7 +132,7 @@ d3.csv("players.csv").then(rawData =>{
 
     // Y ticks
     const y1 = d3.scaleLinear()
-    .domain([0, d3.max(rawData, d => d.SO_AB)])
+    .domain([0, d3.max(rawData, d => d.HP)])
     .range([scatterHeight, 0])
 
     const yAxisCall = d3.axisLeft(y1)
@@ -94,10 +143,10 @@ d3.csv("players.csv").then(rawData =>{
 
     rects.enter().append("circle")
          .attr("cx", function(d){
-             return x1(d.H_AB);
+             return x1(d.Type_1);
          })
          .attr("cy", function(d){
-             return y1(d.SO_AB);
+             return y1(d.HP);
          })
          .attr("r", 3)
          .attr("fill", "#69b3a2")
@@ -126,7 +175,7 @@ d3.csv("players.csv").then(rawData =>{
     .attr("y", teamHeight + 50)
     .attr("font-size", "20px")
     .attr("text-anchor", "middle")
-    .text("Team")
+    .text("Type")
     
 
     // Y label
@@ -136,7 +185,7 @@ d3.csv("players.csv").then(rawData =>{
     .attr("font-size", "20px")
     .attr("text-anchor", "middle")
     .attr("transform", "rotate(-90)")
-    .text("Number of players")
+    .text("Number of pokemon")
 
     // X ticks
     const x2 = d3.scaleBand()
