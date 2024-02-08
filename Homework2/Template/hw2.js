@@ -1,3 +1,6 @@
+// graph 1: bar graph total pokemon with all types vs total stats
+// graph 2: dot plot pokemon with all types vs hp and attack
+// graph 3: star plot with the type that has the highest total
 let abFilter = 25
 const width = window.innerWidth;
 const height = window.innerHeight;
@@ -12,78 +15,32 @@ let distrMargin = {top: 10, right: 30, bottom: 30, left: 60},
     distrWidth = 400 - distrMargin.left - distrMargin.right,
     distrHeight = 350 - distrMargin.top - distrMargin.bottom;
 
-let teamLeft = 0, teamTop = 400;
-let teamMargin = {top: 10, right: 30, bottom: 30, left: 60},
-    teamWidth = width - teamMargin.left - teamMargin.right,
-    teamHeight = height-450 - teamMargin.top - teamMargin.bottom;
-
-function grouper (data, groupName) {
-    // counts num of group 
-    var count = {};
-    // different categories in data/list of different groups
-    let groups = {};
-
-    for (let obj of data) {
-
-        let tValue = obj[groupName];
-
-        if (tValue in count) {
-            // increases count by 1 per appearance
-         count[tValue]++;
-        } else {
-            // index value to 1 if first
-          count[tValue] = 1;
-        }
-    }
-
-    for (let obj of data) {
-
-        let gValue = obj[group];
-
-        if (gValue in groups) {
-            // append to groups
-         groups[gValue].push(obj);
-        } else {
-            // start of list of groups
-         groups[gValue] = [obj];
-        }
-      }
-      
-      // connect group name to group number in dict
-      for (let tValue in count) {
-        groups[tValue] = {
-          count: count[tValue]
-        };
-      }
-      return groups;
-
-
-}
-
+let typeLeft = 0, typeTop = 400;
+let typeMargin = {top: 10, right: 30, bottom: 30, left: 60},
+    typeWidth = width - typeMargin.left - typeMargin.right,
+    typeHeight = height-450 - typeMargin.top - typeMargin.bottom;
 
 d3.csv("pokemon_alopez247.csv").then(rawData =>{
     console.log("rawData", rawData);
     
     rawData.forEach(function(d){
-        d.Type_1 = Number(d.Type_1);
-        d.Type_2 = Number(d.Type_2);
-        d.Name = d.Name;
         d.HP = Number(d.HP);
+        d.Attack = Number(d.Attack);
+        d.Defense = Number(d.Defense);
+        d.Total = Number(d.Total);
+        //d.Type_1 = Number(d.Type_1);
+        //d.Type_2 = Number(d.Type_2);
+        
     });
-    
-    rawData.forEach(function(d){
-            d.Type_1 = grouper(data, 'Type_1');
-            d.Type_2 = grouper(data, 'Type_2');
-    });
-    
-    
-    rawData = rawData.filter(d=>d.HP>abFilter);
+
+
     rawData = rawData.map(d=>{
                           return {
-                              "Type 1":d.Type_1,
-                              "Type 2":d.Type_2,
-                              "Name":d.Name,
+                              "Type_1":d.Type_1,
+                              //"Type 2":d.Type2,
                               "HP":d.HP,
+                              "Attack":d.Attack,
+                              "Total":d.Total,
                           };
     });
     console.log(rawData);
@@ -102,7 +59,7 @@ d3.csv("pokemon_alopez247.csv").then(rawData =>{
     .attr("y", scatterHeight + 50)
     .attr("font-size", "20px")
     .attr("text-anchor", "middle")
-    .text("Type 1")
+    .text("Attack")
     
 
     // Y label
@@ -116,7 +73,7 @@ d3.csv("pokemon_alopez247.csv").then(rawData =>{
 
     // X ticks
     const x1 = d3.scaleLinear()
-    .domain([0, d3.max(rawData, d => d.Type_1)])
+    .domain([0, d3.max(rawData, d => d.Attack)])
     .range([0, scatterWidth])
 
     const xAxisCall = d3.axisBottom(x1)
@@ -143,7 +100,7 @@ d3.csv("pokemon_alopez247.csv").then(rawData =>{
 
     rects.enter().append("circle")
          .attr("cx", function(d){
-             return x1(d.Type_1);
+             return x1(d.Attack);
          })
          .attr("cy", function(d){
              return y1(d.HP);
@@ -159,20 +116,31 @@ d3.csv("pokemon_alopez247.csv").then(rawData =>{
 
 //plot 2
     
-    q = rawData.reduce((s, { teamID }) => (s[teamID] = (s[teamID] || 0) + 1, s), {});
-    r = Object.keys(q).map((key) => ({ teamID: key, count: q[key] }));
-    console.log(r);
+    const q = rawData.reduce((s, { Type_1 }) => (s[Type_1] = (s[Type_1] || 0) + 1, s), {});
+    const r = Object.keys(q).map((key) => ({ Type_1: key, count: q[key] }));
 
+    // finds the total stats per type x
+    const totalsByType = rawData.reduce((totals, { Type_1, Total }) => {
+        if (!totals[Type_1]) {
+            // index total stats for type x
+            totals[Type_1] = 0;
+        }
+            // add stats to total of total stats
+        totals[Type_1] += Total;
+        return totals;
+    }, {});
+
+    console.log(r);
            
     const g3 = svg.append("g")
-                .attr("width", teamWidth + teamMargin.left + teamMargin.right)
-                .attr("height", teamHeight + teamMargin.top + teamMargin.bottom)
-                .attr("transform", `translate(${teamMargin.left}, ${teamTop})`)
+                .attr("width", typeWidth + typeMargin.left + typeMargin.right)
+                .attr("height", typeHeight + typeMargin.top + typeMargin.bottom)
+                .attr("transform", `translate(${typeMargin.left}, ${typeTop})`)
 
     // X label
     g3.append("text")
-    .attr("x", teamWidth / 2)
-    .attr("y", teamHeight + 50)
+    .attr("x", typeWidth / 2)
+    .attr("y", typeHeight + 50)
     .attr("font-size", "20px")
     .attr("text-anchor", "middle")
     .text("Type")
@@ -180,23 +148,23 @@ d3.csv("pokemon_alopez247.csv").then(rawData =>{
 
     // Y label
     g3.append("text")
-    .attr("x", -(teamHeight / 2))
+    .attr("x", -(typeHeight / 2))
     .attr("y", -40)
     .attr("font-size", "20px")
     .attr("text-anchor", "middle")
     .attr("transform", "rotate(-90)")
-    .text("Number of pokemon")
+    .text("Total Battle Stats")
 
     // X ticks
     const x2 = d3.scaleBand()
-    .domain(r.map(d => d.teamID))
-    .range([0, teamWidth])
+    .domain(r.map(d => d.Type_1))
+    .range([0, typeWidth])
     .paddingInner(0.3)
     .paddingOuter(0.2)
 
     const xAxisCall2 = d3.axisBottom(x2)
     g3.append("g")
-    .attr("transform", `translate(0, ${teamHeight})`)
+    .attr("transform", `translate(0, ${typeHeight})`)
     .call(xAxisCall2)
     .selectAll("text")
         .attr("y", "10")
@@ -206,24 +174,52 @@ d3.csv("pokemon_alopez247.csv").then(rawData =>{
 
     // Y ticks
     const y2 = d3.scaleLinear()
-    .domain([0, d3.max(r, d => d.count)])
-    .range([teamHeight, 0])
+        .domain([0, d3.max(Object.values(totalsByType))])
+        .range([typeHeight, 0]);
 
     const yAxisCall2 = d3.axisLeft(y2)
-                        .ticks(6)
-    g3.append("g").call(yAxisCall2)
+        .ticks(6);
+    g3.append("g").call(yAxisCall2);
 
-    const rects2 = g3.selectAll("rect").data(r)
+    const rects2 = g3.selectAll("rect").data(r);
+
+    // hex colors from https://www.epidemicjohto.com/t882-type-colors-hex-colors
+    const typeColor = [
+        "#7ac74c", // grass
+        "#ee8130", // fire
+        "#6390f0", // water
+        "#a6b91a", // bug
+        "#a8a77a", // normal
+        "#a33ea1", // poison
+        "#f7d02c", // electric
+        "#e2bf65", // ground
+        "#d685ad", // fairy
+        "#c22e28", // fighting
+        "#f95587", // psychic
+        "#b6a136", // rock
+        "#735797", // ghost
+        "#96d9d6", // ice
+        "#6f35fc", // dragon
+        "#705746", // dark
+        "#b7b7ce", // steel
+        "#a98ff3"  // flying
+    ];
+
+    const colorScale = d3.scaleOrdinal()
+        .domain(r.map(d => d.Type_1))
+        .range(typeColor); 
 
     rects2.enter().append("rect")
-    .attr("y", d => y2(d.count))
-    .attr("x", (d) => x2(d.teamID))
-    .attr("width", x2.bandwidth)
-    .attr("height", d => teamHeight - y2(d.count))
-    .attr("fill", "grey")
+        .attr("y", d => y2(totalsByType[d.Type_1])) 
+        .attr("x", d => x2(d.Type_1))
+        .attr("width", x2.bandwidth())
+        .attr("height", d => typeHeight - y2(totalsByType[d.Type_1])) 
+        .attr("fill", d => colorScale(d.Type_1));
 
-
-
+//plot 3
+    
+const x = rawData.reduce((s, { Type_1 }) => (s[Type_1] = (s[Type_1] || 0) + 1, s), {});
+const y = Object.keys(q).map((key) => ({ Type_1: key, count: q[key] }));
 
 
 
