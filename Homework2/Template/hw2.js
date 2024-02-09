@@ -50,13 +50,24 @@ d3.csv("pokemon_alopez247.csv").then(rawData =>{
                 .attr("height", scatterHeight + scatterMargin.top + scatterMargin.bottom)
                 .attr("transform", `translate(${scatterMargin.left}, ${scatterMargin.top})`)
 
+
+    // Chart title
+    g1.append("text")
+    .attr("x", scatterWidth / 2)
+    .attr("y", 0)
+    .attr("font-size", "10px")
+    .attr("text-anchor", "middle")
+    .attr("font-family", "Roboto")
+    .text("Total HP to Total Attack of all Pokemon Types")
+
     // X label
     g1.append("text")
     .attr("x", scatterWidth / 2)
     .attr("y", scatterHeight + 50)
     .attr("font-size", "20px")
     .attr("text-anchor", "middle")
-    .text("Attack")
+    .attr("font-family", "Roboto")
+    .text("Attack totals")
     
 
     // Y label
@@ -66,7 +77,8 @@ d3.csv("pokemon_alopez247.csv").then(rawData =>{
     .attr("font-size", "20px")
     .attr("text-anchor", "middle")
     .attr("transform", "rotate(-90)")
-    .text("HP")
+    .attr("font-family", "Roboto")
+    .text("HP totals")
 
     // X ticks
     const x1 = d3.scaleLinear()
@@ -103,7 +115,7 @@ d3.csv("pokemon_alopez247.csv").then(rawData =>{
              return y1(d.HP);
          })
          .attr("r", 3)
-         .attr("fill", "#69b3a2")
+         .attr("fill", "#7a6bae")
 
 //space
     const g2 = svg.append("g")
@@ -133,6 +145,14 @@ d3.csv("pokemon_alopez247.csv").then(rawData =>{
                 .attr("width", typeWidth + typeMargin.left + typeMargin.right)
                 .attr("height", typeHeight + typeMargin.top + typeMargin.bottom)
                 .attr("transform", `translate(${typeMargin.left}, ${typeTop})`)
+
+   // Chart title
+   g3.append("text")
+   .attr("x", typeWidth / 2)
+   .attr("y", -10)
+   .attr("font-size", "20px")
+   .attr("text-anchor", "middle")
+   .text("Total Battle Statistics of Each Pokemon Type")
 
     // X label
     g3.append("text")
@@ -219,23 +239,23 @@ d3.csv("pokemon_alopez247.csv").then(rawData =>{
             .attr("height", distrHeight + distrMargin.top + distrMargin.bottom)
             .attr("transform", `translate(${distrLeft}, ${distrTop})`)
 
-// plot 3
-// focus on water types, with HP,Attack,Defense,Sp_Atk,Sp_Def,Speed
-// star plot
-const waterPkmn = rawData.filter(pokemon => pokemon.Type_1 === "Water");
+    // plot 3
+    // focus on water types, with HP,Attack,Defense,Sp_Atk,Sp_Def,Speed
+    // star plot
+    const waterPkmn = rawData.filter(pokemon => pokemon.Type_1 === "Water");
 
-const waterStats = waterPkmn.map(pokemon =>{
-                            return {
-                                "HP":pokemon.HP,
-                                "Attack":pokemon.Attack,
-                                "Defense":pokemon.Defense,
-                                "Sp_Atk":pokemon.Sp_Atk,
-                                "Sp_Def":pokemon.Sp_Def,
-                                "Speed":pokemon.Speed
-                                                        
-                            };
-});
-console.log(waterStats);
+    const waterStats = waterPkmn.map(pokemon =>{
+                                return {
+                                    "HP":pokemon.HP,
+                                    "Attack":pokemon.Attack,
+                                    "Defense":pokemon.Defense,
+                                    "Sp_Atk":pokemon.Sp_Atk,
+                                    "Sp_Def":pokemon.Sp_Def,
+                                    "Speed":pokemon.Speed
+                                                            
+                                };
+    });
+    console.log(waterStats);
 
 
 
