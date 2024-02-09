@@ -1,7 +1,7 @@
 // graph 1: bar graph total pokemon with all types vs total stats
 // graph 2: dot plot pokemon with all types vs hp and attack
 // graph 3: star plot with the type that has the highest total
-let abFilter = 25
+
 const width = window.innerWidth;
 const height = window.innerHeight;
 
@@ -23,13 +23,11 @@ let typeMargin = {top: 10, right: 30, bottom: 30, left: 60},
 d3.csv("pokemon_alopez247.csv").then(rawData =>{
     console.log("rawData", rawData);
     
+    // d being total dataset
     rawData.forEach(function(d){
         d.HP = Number(d.HP);
         d.Attack = Number(d.Attack);
-        d.Defense = Number(d.Defense);
         d.Total = Number(d.Total);
-        //d.Type_1 = Number(d.Type_1);
-        //d.Type_2 = Number(d.Type_2);
         
     });
 
@@ -37,7 +35,6 @@ d3.csv("pokemon_alopez247.csv").then(rawData =>{
     rawData = rawData.map(d=>{
                           return {
                               "Type_1":d.Type_1,
-                              //"Type 2":d.Type2,
                               "HP":d.HP,
                               "Attack":d.Attack,
                               "Total":d.Total,
@@ -141,7 +138,7 @@ d3.csv("pokemon_alopez247.csv").then(rawData =>{
     g3.append("text")
     .attr("x", typeWidth / 2)
     .attr("y", typeHeight + 50)
-    .attr("font-size", "20px")
+    .attr("font-size", "15px")
     .attr("text-anchor", "middle")
     .text("Type")
     
@@ -150,7 +147,7 @@ d3.csv("pokemon_alopez247.csv").then(rawData =>{
     g3.append("text")
     .attr("x", -(typeHeight / 2))
     .attr("y", -40)
-    .attr("font-size", "20px")
+    .attr("font-size", "15px")
     .attr("text-anchor", "middle")
     .attr("transform", "rotate(-90)")
     .text("Total Battle Stats")
@@ -216,33 +213,29 @@ d3.csv("pokemon_alopez247.csv").then(rawData =>{
         .attr("height", d => typeHeight - y2(totalsByType[d.Type_1])) 
         .attr("fill", d => colorScale(d.Type_1));
 
-//plot 3
-    
-const x = rawData.reduce((s, { Type_1 }) => (s[Type_1] = (s[Type_1] || 0) + 1, s), {});
-const y = Object.keys(q).map((key) => ({ Type_1: key, count: q[key] }));
 
+    const g4 = svg.append("g")
+            .attr("width", distrWidth + distrMargin.left + distrMargin.right)
+            .attr("height", distrHeight + distrMargin.top + distrMargin.bottom)
+            .attr("transform", `translate(${distrLeft}, ${distrTop})`)
 
+// plot 3
+// focus on water types, with HP,Attack,Defense,Sp_Atk,Sp_Def,Speed
+// star plot
+const waterPkmn = rawData.filter(pokemon => pokemon.Type_1 === "Water");
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-S
-
-
-
-
-
+const waterStats = waterPkmn.map(pokemon =>{
+                            return {
+                                "HP":pokemon.HP,
+                                "Attack":pokemon.Attack,
+                                "Defense":pokemon.Defense,
+                                "Sp_Atk":pokemon.Sp_Atk,
+                                "Sp_Def":pokemon.Sp_Def,
+                                "Speed":pokemon.Speed
+                                                        
+                            };
+});
+console.log(waterStats);
 
 
 
